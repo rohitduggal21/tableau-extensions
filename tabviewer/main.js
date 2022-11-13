@@ -10,6 +10,44 @@ app.set("view engine", "ejs")
 app.use(express.static(__dirname+"/"))
 app.use(express.static(__dirname + '/../lib/'))
 
+app.get("/banner", (req, res) => {
+	var geo = geoip.lookup(req.ip);
+
+	var query = "select * from stock_banner";
+
+	pool.query(query,(error,results) => {
+		if (error){
+			console.log({
+							"resource": "data",
+							"query": query,
+							"status": "fail",
+							"err": error,
+							'datetime': Date(),
+							"ip": req.ip,
+							"browser": req.headers["user-agent"],
+							"Country": (geo ? geo.country: "Unknown"),
+							"Region": (geo ? geo.region: "Unknown")
+						});
+			res.render("banner",{'data':[]});
+		}
+		else
+		{
+			console.log({
+							"resource": "data",
+							"query": query,
+							"status": "success",
+							"err": "null",
+							'datetime': Date(),
+							"ip": req.ip,
+							"browser": req.headers["user-agent"],
+							"Country": (geo ? geo.country: "Unknown"),
+							"Region": (geo ? geo.region: "Unknown")
+						});
+			res.render("banner",{'data':results.rows});
+		}
+	})
+});
+
 app.get("/dbview", (req, res) => {
 	var geo = geoip.lookup(req.ip);
 	console.log({
